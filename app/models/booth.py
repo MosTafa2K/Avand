@@ -1,10 +1,14 @@
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from sqlalchemy import DateTime, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
+
+if TYPE_CHECKING:
+    from app.models.vendor import Vendor
 
 
 class Booth(Base):
@@ -29,4 +33,4 @@ class Booth(Base):
         default=lambda: datetime.now(UTC),
         onupdate=lambda: datetime.now(UTC),
     )
-    vendor: Mapped["Vendor"] = relationship(back_populates="booths")  # type: ignore # noqa: F821
+    vendor: Mapped["Vendor"] = relationship(back_populates="booths")

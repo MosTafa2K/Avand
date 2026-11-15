@@ -1,10 +1,15 @@
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from sqlalchemy import DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
+
+if TYPE_CHECKING:
+    from app.models.booth import Booth
+    from app.models.user import User
 
 
 class Vendor(Base):
@@ -25,7 +30,7 @@ class Vendor(Base):
         onupdate=lambda: datetime.now(UTC),
     )
 
-    user: Mapped["User"] = relationship(back_populates="vendor")  # type: ignore # noqa
-    booths: Mapped[list["Booth"]] = relationship(  # type: ignore # noqa
+    user: Mapped["User"] = relationship(back_populates="vendor")
+    booths: Mapped[list["Booth"]] = relationship(
         back_populates="vendor", cascade="all, delete-orphan"
     )
