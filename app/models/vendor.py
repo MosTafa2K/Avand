@@ -26,3 +26,6 @@ class Vendor(Base):
     )
 
     user: Mapped["User"] = relationship(back_populates="vendor")  # type: ignore # noqa
+    booths: Mapped[list["Booth"]] = relationship(  # type: ignore # noqa
+        back_populates="vendor", cascade="all, delete-orphan"
+    )
