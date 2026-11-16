@@ -8,9 +8,11 @@ from slugify import slugify
 class BoothCreate(BaseModel):
     name: str = Field(min_length=2, max_length=120)
     slug: str | None = Field(
+        default=None,
         min_length=2,
         max_length=140,
         pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        json_schema_extra={"examples": ["my-awesome-booth"]},
     )
     description: str | None = None
 
