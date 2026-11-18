@@ -15,8 +15,9 @@ async def list_booths(
     db: DBSession,
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
+    only_active: bool = Query(False),
 ):
-    items, total = await BoothService(db).list_booth(page, size)
+    items, total = await BoothService(db).list_booth(page, size, only_active)
     return Page(items=items, total=total, page=page, size=size)
 
 

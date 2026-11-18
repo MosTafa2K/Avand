@@ -51,8 +51,8 @@ class BoothService:
 
         return booth
 
-    async def list_booth(self, page: int, size: int) -> tuple[list[Booth], int]:
-        return await self.booths.list_(page, size)
+    async def list_booth(self, page: int, size: int, active_only: bool) -> tuple[list[Booth], int]:
+        return await self.booths.list_(page, size, active_only=active_only)
 
     async def list_mine(self, user_id: UUID, page: int, size: int) -> tuple[list[Booth], int]:
         vendor = await self.vendors.get_by_user_id(user_id)
