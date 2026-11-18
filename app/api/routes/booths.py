@@ -90,7 +90,7 @@ async def update_booth(
     return booth
 
 
-@router.delete("/{booth_id}")
+@router.delete("/{booth_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_booth(db: DBSession, user: CurrentUser, booth_id: UUID):
     try:
         await BoothService(db).delete(booth_id, user.id)
