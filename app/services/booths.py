@@ -46,8 +46,10 @@ class BoothService:
     async def get(self, booth_id: UUID) -> Booth | None:
         booth = await self.booths.get(booth_id)
 
-        if booth is None or not booth.is_active:
+        if booth is None:
             return None
+        if not booth.is_active:
+            return False
 
         return booth
 
@@ -102,6 +104,18 @@ class BoothService:
             await self.session.rollback()
             raise ConflictError("A booth with this slug already exists") from exc
 
+    async def delete(self, booth_id: UUID, user_id: UUID) -> None:
+        booth = await self.booths.get(booth_id)
+
+        if booth is None:
+            return None
+
+        vendor = await self.vendors.get_by_user_id(user_id)
+
+        if vendor is None or booth.vendor_id != vendor.id:
+            raise PermissionError("You do not own this booth")
+
+        await self.booths.delete(booth_id)
 
 class ConflictError(Exception):
     pass

@@ -11,7 +11,9 @@ class BoothRepository:
         self.session = session
 
     async def get(self, booth_id: UUID) -> Booth | None:
-        return await self.session.get(Booth, booth_id)
+        stmt = select(Booth).where(Booth.id == booth_id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
 
     async def get_by_slug(self, slug: str) -> Booth | None:
         return await self.session.scalar(select(Booth).where(Booth.slug == slug))

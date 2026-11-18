@@ -52,6 +52,11 @@ async def get_booth(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Booth not found",
         )
+    if not booth:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Booth is not active!",
+        )
 
     return booth
 
