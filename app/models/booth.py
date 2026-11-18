@@ -8,6 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db import Base
 
 if TYPE_CHECKING:
+    from app.models.product import Product
     from app.models.vendor import Vendor
 
 
@@ -34,3 +35,6 @@ class Booth(Base):
         onupdate=lambda: datetime.now(UTC),
     )
     vendor: Mapped["Vendor"] = relationship(back_populates="booths")
+    products: Mapped[list["Product"]] = relationship(
+        back_populates="booth", cascade="all, delete-orphan"
+    )
