@@ -16,7 +16,7 @@ async def list_booths(
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
 ):
-    items, total = await BoothService(db).list(page, size)
+    items, total = await BoothService(db).list_booth(page, size)
     return Page(items=items, total=total, page=page, size=size)
 
 
