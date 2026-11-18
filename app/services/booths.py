@@ -60,7 +60,7 @@ class BoothService:
         if vendor is None:
             return [], 0
 
-        return await self.booths.list(
+        return await self.booths.list_(
             page=page,
             size=size,
             vendor_id=vendor.id,

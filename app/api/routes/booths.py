@@ -21,6 +21,17 @@ async def list_booths(
     return Page(items=items, total=total, page=page, size=size)
 
 
+@router.get("/me", response_model=Page[BoothRead])
+async def list_mine_booths(
+    db: DBSession,
+    user: CurrentUser,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+):
+    items, total = await BoothService(db).list_mine(user.id, page, size)
+    return Page(items=items, total=total, page=page, size=size)
+
+
 @router.post("", response_model=BoothRead)
 async def create_booth(data: BoothCreate, db: DBSession, user: CurrentUser):
     try:
