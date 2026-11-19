@@ -1,310 +1,308 @@
-# FastAPI Starter
+# Avand (آوند)
 
-A reusable, production-oriented starter template for building asynchronous FastAPI services with Python 3.12+, PostgreSQL, SQLAlchemy 2.0, Alembic, JWT authentication, Pydantic Settings, HTTPX, pytest, Ruff and Docker.
+**Avand** is the backend API for a multi-vendor marketplace where users can create their own booths and manage products. It is built with FastAPI and uses PostgreSQL to store its data.
 
-The template provides the common foundation for a new API project while keeping domain-specific features easy to add. It includes a layered application structure, database migrations, user authentication, request IDs, CORS configuration, health checks and a small initial test suite.
+This project is designed as a foundation for a marketplace: it currently covers accounts, authentication, booths, and products, and can be extended.
 
-## Features
+## What can Avand do?
 
-- Async FastAPI application with a lifespan hook for shared resources
-- Async SQLAlchemy sessions with PostgreSQL and `asyncpg`
-- Alembic migrations
-- User registration, login, refresh-token and OAuth2-compatible token endpoints
-- Password hashing with Argon2 through `pwdlib`
-- JWT access and refresh tokens
-- Authenticated user endpoints and role-based authorization dependency
-- Pydantic Settings with `.env` support
-- Request ID middleware and centralized unhandled-error response
-- Liveness and database readiness endpoints
-- CORS configuration through environment variables
-- Docker and Docker Compose setup
-- pytest test suite and Ruff linting/formatting
-- Reproducible dependency lockfile managed by `uv`
+- Create an account and log in.
+- Authenticate requests using JWT access and refresh tokens.
+- Manage user profiles.
+- Create a vendor profile automatically when needed.
+- Create and manage booths.
+- Add, edit, and remove products from booths.
+- Browse active booths and products without logging in.
+- Search products using product name and browse paginated results.
+- Restrict booth and product management to their owners.
+- Keep product data consistent using database constraints.
 
-## Requirements
+## Built with
+
+| Tool | What it's used for |
+|---|---|
+| Python 3.12+ | The language used to build the project |
+| FastAPI | Building the REST API |
+| PostgreSQL | Storing application data |
+| SQLAlchemy 2.x | Database access using an async ORM |
+| asyncpg | Async PostgreSQL driver |
+| Alembic | Managing database migrations |
+| Pydantic v2 | Validating and serializing data |
+| Pydantic Settings | Loading application configuration |
+| PyJWT | Creating and validating JWTs |
+| pwdlib / Argon2 | Secure password hashing |
+| uv | Managing dependencies and the Python environment |
+| Ruff | Linting and formatting |
+
+## Getting started
+
+Follow these steps to run Avand locally.
+
+### 1. Requirements
+
+Make sure you have installed:
 
 - Python 3.12 or newer
-- [`uv`](https://docs.astral.sh/uv/)
-- Docker and Docker Compose, if you want to run PostgreSQL locally through containers
+- PostgreSQL
+- [uv](https://docs.astral.sh/uv/)
 
-## Quick start
-
-### 1. Configure the environment
-
-Copy the example environment file and update the values as needed:
+### 2. Get the project
 
 ```bash
-cp .env.example .env
+git clone <repository-url>
+cd Avand
 ```
 
-On PowerShell:
+### 3. Set up your environment
 
+Create your local `.env` file using the example:
+
+**Windows PowerShell:**
 ```powershell
 Copy-Item .env.example .env
 ```
 
-At minimum, replace `SECRET_KEY` with a long, random value. Never commit `.env` or real credentials to the repository.
-
-### 2. Start PostgreSQL
-
-To start only the database:
-
+**Linux/macOS:**
 ```bash
-docker compose up -d db
+cp .env.example .env
 ```
 
-The default local database is available at `localhost:5432` with:
+Open `.env` and configure the database URL and secret key, along with any other settings you need.
 
-```text
-database: app
-user:     postgres
-password: postgres
-```
-
-These values are intended for local development only.
-
-### 3. Install dependencies
+### 4. Install dependencies
 
 ```bash
 uv sync
 ```
 
-This installs both runtime and development dependencies and uses `uv.lock` when resolving packages.
+### 5. Prepare the database
 
-### 4. Apply migrations
+Apply the migrations:
 
 ```bash
 uv run alembic upgrade head
 ```
 
-### 5. Run the API
+### 6. Run Avand
 
 ```bash
 uv run uvicorn app.main:app --reload
 ```
 
-The service is now available at:
+The server will be available at `http://localhost:8000`.
 
-- API base URL: `http://localhost:8000/api/v1`
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
-- OpenAPI schema: `http://localhost:8000/openapi.json`
+<details>
+<summary>Useful links after starting the server</summary>
 
-## Docker Compose
+- **Swagger UI:** http://localhost:8000/docs — try the API interactively.
+- **ReDoc:** http://localhost:8000/redoc — browse the API documentation.
+- **OpenAPI schema:** http://localhost:8000/openapi.json — view or download the API schema.
 
-To build and run both PostgreSQL and the API:
-
-```bash
-docker compose up --build
-```
-
-The Compose API service waits for PostgreSQL to become healthy before starting. The current Compose command enables Uvicorn reload and is intended for development. For production, use a dedicated image and deployment configuration with reload disabled.
-
-To stop the services:
-
-```bash
-docker compose down
-```
-
-To stop the services and remove the local database volume:
-
-```bash
-docker compose down -v
-```
-
-The last command deletes local PostgreSQL data and should only be used when that data is disposable.
+</details>
 
 ## Configuration
 
-Configuration is loaded from environment variables and `.env`. Environment variables take precedence over defaults.
+Avand loads its configuration from environment variables and the `.env` file.
 
 | Variable | Description | Example |
-| --- | --- | --- |
-| `APP_NAME` | Application name shown in OpenAPI metadata | `FastAPI Starter` |
-| `ENVIRONMENT` | Runtime environment | `development` |
-| `DEBUG` | Enables FastAPI debug mode | `true` |
-| `API_V1_PREFIX` | API route prefix | `/api/v1` |
-| `SECRET_KEY` | Key used to sign JWTs; use a strong secret | `replace-me` |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | Access-token lifetime | `30` |
-| `REFRESH_TOKEN_EXPIRE_DAYS` | Refresh-token lifetime | `7` |
-| `DATABASE_URL` | Async SQLAlchemy database URL | `postgresql+asyncpg://postgres:postgres@localhost:5432/app` |
-| `ALLOWED_ORIGINS` | Comma-separated CORS origins | `http://localhost:3000,http://localhost:8000` |
-| `LOG_LEVEL` | Application log level | `INFO` |
+|---|---|---|
+| `APP_NAME` | Name shown in API documentation | `Avand` |
+| `ENVIRONMENT` | Current environment | `development` |
+| `DEBUG` | Enable debug mode | `true` |
+| `API_V1_PREFIX` | Prefix for API routes | `/api/v1` |
+| `SECRET_KEY` | Key used to sign JWTs | Use a strong, private value |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Access token lifetime | `30` |
+| `REFRESH_TOKEN_EXPIRE_DAYS` | Refresh token lifetime | `7` |
+| `DATABASE_URL` | PostgreSQL connection URL | `postgresql+asyncpg://...` |
+| `ALLOWED_ORIGINS` | Allowed origins for CORS | `http://localhost:3000` |
+| `LOG_LEVEL` | Logging level | `INFO` |
 
-For production:
+Example database URL:
 
-- Set `ENVIRONMENT=production` and `DEBUG=false`.
-- Generate a unique `SECRET_KEY` of at least 32 characters.
-- Use a managed or secured PostgreSQL instance and credentials stored in a secret manager.
-- Restrict `ALLOWED_ORIGINS` to trusted frontend origins.
-- Do not expose PostgreSQL publicly unless required.
-- Run migrations as an explicit deployment step before serving traffic.
+```text
+postgresql+asyncpg://postgres:postgres@localhost:5432/avand
+```
 
-## API overview
+## API at a glance
 
-All routes are prefixed with `/api/v1` by default.
+All API routes use the `/api/v1` prefix by default. Protected endpoints require a Bearer access token.
 
-| Method | Endpoint | Authentication | Description |
-| --- | --- | --- | --- |
-| `GET` | `/health` | None | Liveness check |
-| `GET` | `/ready` | None | Database readiness check |
-| `POST` | `/auth/register` | None | Create a user |
-| `POST` | `/auth/login` | None | Return access and refresh tokens |
-| `POST` | `/auth/token` | None | OAuth2 form-compatible login endpoint |
-| `POST` | `/auth/refresh` | None | Issue a new token pair |
-| `GET` | `/users/me` | Bearer token | Return the current user |
-| `GET` | `/users` | Bearer token | List users with pagination and search |
-| `GET` | `/users/{user_id}` | Bearer token | Get a user by ID |
-| `PATCH` | `/users/{user_id}` | Bearer token | Update the current user or an admin-managed user |
+### Health checks
 
-### Register and login
+| Method | Endpoint | Login required? | What it does |
+|---|---|---|---|
+| `GET` | `/health` | No | Checks that the application is running. |
+| `GET` | `/ready` | No | Checks database connectivity. |
+
+### Authentication
+
+| Method | Endpoint | Login required? | What it does |
+|---|---|---|---|
+| `POST` | `/auth/register` | No | Creates a user account. |
+| `POST` | `/auth/login` | No | Logs in and returns tokens. |
+| `POST` | `/auth/refresh` | No | Refreshes the token pair. |
+| `POST` | `/auth/token` | No | Provides an OAuth2-compatible token endpoint. |
+
+### Users
+
+| Method | Endpoint | Login required? | What it does |
+|---|---|---|---|
+| `GET` | `/users/me` | Yes | Shows your profile. |
+| `GET` | `/users` | Yes | Lists users with pagination and optional search. |
+| `GET` | `/users/{user_id}` | Yes | Gets a user by ID. |
+| `PATCH` | `/users/{user_id}` | Yes | Updates a user, subject to authorization rules. |
+
+### Booths
+
+| Method | Endpoint | Login required? | What it does |
+|---|---|---|---|
+| `GET` | `/booths` | No | Browses active booths. |
+| `POST` | `/booths` | Yes | Creates a booth for you. A vendor profile is created if needed. |
+| `GET` | `/booths/me` | Yes | Lists your booths. |
+| `GET` | `/booths/{booth_id}` | No | Views an active booth. |
+| `PATCH` | `/booths/{booth_id}` | Yes | Updates a booth you own. |
+| `DELETE` | `/booths/{booth_id}` | Yes | Deletes a booth you own. |
+
+### Products
+
+| Method | Endpoint | Login required? | What it does |
+|---|---|---|---|
+| `GET` | `/products` | No | Browses active products, with pagination and search. |
+| `POST` | `/products/booths/{booth_id}` | Yes | Adds a product to a booth you own. |
+| `GET` | `/products/me/booths/{booth_id}` | Yes | Lists your booth's products, including inactive ones. |
+| `GET` | `/products/{product_id}` | No | Views an active product. |
+| `PATCH` | `/products/{product_id}` | Yes | Updates a product you own. |
+| `DELETE` | `/products/{product_id}` | Yes | Deletes a product you own. |
+
+## Using the API
+
+### Register an account
 
 ```bash
 curl -X POST http://localhost:8000/api/v1/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"email":"you@example.com","full_name":"Your Name","password":"correct horse battery staple"}'
-
-curl -X POST http://localhost:8000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"you@example.com","password":"correct horse battery staple"}'
+  -d '{"email":"you@example.com","full_name":"Your Name","password":"your-strong-password"}'
 ```
 
-The login response contains `access_token`, `refresh_token` and `token_type`. Use the access token for protected endpoints:
+### Log in
+
+```bash
+curl -X POST http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@example.com","password":"your-strong-password"}'
+```
+
+The response includes your tokens. For protected endpoints, send the access token in the `Authorization` header.
+
+### Make an authenticated request
 
 ```bash
 curl http://localhost:8000/api/v1/users/me \
   -H "Authorization: Bearer <access_token>"
 ```
 
-The `/auth/token` endpoint accepts OAuth2 form fields (`username` and `password`) and is used by the Swagger UI authorization flow.
+You can also try these requests directly through Swagger UI at `/docs`.
 
-## Project structure
+## Pagination and search
+
+List endpoints that support pagination accept `page` and `size` query parameters. Product listing also supports a `search` parameter.
+
+| Parameter | Description | Default / limits |
+|---|---|---|
+| `page` | Page to retrieve | `1` or higher |
+| `size` | Items per page | Default: `20`, maximum: `100` |
+| `search` | Search by product name(where supported) | Optional |
+
+Example:
+
+```http
+GET /api/v1/products?page=1&size=20&search=keyboard
+```
+
+Paginated responses look like this:
+
+```json
+{
+  "items": [],
+  "total": 0,
+  "page": 1,
+  "size": 20
+}
+```
+
+## How the project is organized
+
+Avand uses separate layers so each part of the application has a focused responsibility.
 
 ```text
 .
 ├── app/
-│   ├── api/             # Routers, dependencies and HTTP concerns
-│   ├── core/            # Settings, security and logging
-│   ├── models/          # SQLAlchemy models
-│   ├── repositories/    # Database access
-│   ├── schemas/         # Pydantic request/response schemas
-│   ├── services/        # Business logic
-│   ├── db.py            # Engine, session factory and declarative base
-│   └── main.py          # FastAPI application and middleware
-├── migrations/          # Alembic environment and migration versions
-├── tests/               # Automated tests
-├── .env.example         # Local configuration template
-├── docker-compose.yml   # Local PostgreSQL and API services
-├── Dockerfile           # Container image definition
-├── Makefile             # Common development commands
-├── pyproject.toml       # Dependencies and tool configuration
-└── uv.lock              # Locked dependency versions
+│   ├── api/
+│   │   ├── routes/          # Endpoints and HTTP handling
+│   │   ├── deps.py          # Shared dependencies
+│   │   └── router.py        # Route registration
+│   ├── core/                # Settings and security utilities
+│   ├── models/               # SQLAlchemy database models
+│   ├── repositories/         # Database queries
+│   ├── schemas/              # Request and response schemas
+│   ├── services/              # Business rules and operations
+│   ├── db.py                 # Database engine and sessions
+│   ├── middleware.py         # Request middleware
+│   └── main.py               # Application entry point
+├── migrations/               # Alembic migrations
+├── tests/                    # Automated tests
+├── .env.example              # Example configuration
+├── alembic.ini               # Alembic configuration
+├── pyproject.toml             # Project configuration and dependencies
+└── uv.lock                   # Locked dependency versions
 ```
 
-### Request flow
-
-For a typical feature, keep responsibilities separated:
-
-```text
-HTTP request
-    -> router
-    -> schema validation
-    -> service
-    -> repository
-    -> SQLAlchemy model / database
-```
-
-Routers should handle HTTP concerns, services should contain business rules, and repositories should contain database queries. This makes features easier to test and replace.
-
-## Adding a new feature
-
-For a new resource, the usual workflow is:
-
-1. Add the SQLAlchemy model under `app/models/`.
-2. Export the model from `app/models/__init__.py` if Alembic needs to discover it.
-3. Add request and response schemas under `app/schemas/`.
-4. Add database operations under `app/repositories/`.
-5. Add business logic under `app/services/`.
-6. Add the router under `app/api/routes/`.
-7. Include the router in `app/api/router.py`.
-8. Create and review a migration.
-9. Add tests for the service and API behavior.
+In a typical request, the router receives the request, the schema validates the data, the service applies business rules, and the repository handles database operations.
 
 ## Database migrations
 
-Create a migration after changing SQLAlchemy models:
+When you change a database model, create a migration and review it before applying it.
+
+Create a migration:
 
 ```bash
 uv run alembic revision --autogenerate -m "describe change"
 ```
 
-Always review autogenerated migrations before applying them. Apply the latest migrations with:
+Apply migrations:
 
 ```bash
 uv run alembic upgrade head
 ```
 
-Useful commands:
+Check the current revision or migration history:
 
 ```bash
 uv run alembic current
 uv run alembic history
+```
+
+Undo the most recent migration:
+
+```bash
 uv run alembic downgrade -1
 ```
 
-## Development commands
-
-The same commands are available through the Makefile:
-
-```bash
-make install   # Install dependencies
-make run       # Start the development server
-make test      # Run tests
-make lint      # Run Ruff checks
-make format    # Format the code
-make migrate   # Apply migrations
-```
-
-Equivalent `uv` commands:
-
-```bash
-uv run pytest
-uv run ruff check .
-uv run ruff format .
-uv run uvicorn app.main:app --reload
-```
-
-Run the complete local validation before committing:
-
-```bash
-uv run ruff check .
-uv run pytest
-```
-
-## Testing
-
-Tests are located in `tests/` and are configured to use automatic asyncio support. The current health endpoint test does not require a running database. Tests that exercise database-backed endpoints should use an isolated test database and should not depend on the development PostgreSQL volume.
-
-## Runtime behavior
-
-- Database sessions are created per request through `get_db`.
-- The application creates one reusable `httpx.AsyncClient` during FastAPI lifespan and closes it during shutdown.
-- Every request receives a request ID through `RequestContextMiddleware`; the ID is returned in the response headers and included in logs.
-- `/health` checks process liveness, while `/ready` verifies database connectivity.
-- Unhandled exceptions are logged and returned as a generic `500` response.
-- Distributed rate limiting is intentionally not included; add it at the gateway or application layer according to deployment needs.
+For database-backed tests, use a separate test database rather than your development or production database.
 
 ## Security notes
 
-This repository is a strong starting point, not a complete security policy for every deployment. Before production use, review token rotation and revocation, password policy, email verification, account recovery, rate limiting, audit logging, TLS termination, secret management and database permissions.
+- Passwords are hashed instead of being stored as plaintext.
+- Protected endpoints use JWT authentication.
+- Booth and product management includes ownership checks.
+- Database constraints help prevent invalid product data.
+- Keep `.env` and secret keys out of version control.
+- Use a strong, unique secret key.
+- Configure CORS for the origins your application actually needs.
+- Disable debug mode in production.
 
-Never commit:
-
-- `.env` files containing secrets
-- Production JWT keys
-- Database credentials
-- User data or generated dumps
+Before deploying to production, consider additional safeguards such as rate limiting, token revocation and rotation, email verification, account recovery, audit logging, TLS, and database access restrictions.
 
 ## License
 
-This template is distributed under the [MIT License](https://opensource.org/license/mit/).
+This project is released under the [MIT License](LICENSE).
