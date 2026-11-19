@@ -12,6 +12,7 @@ from sqlalchemy import (
     Numeric,
     String,
     Text,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -49,4 +50,5 @@ class Product(Base):
     __table_args__ = (
         CheckConstraint("price >= 0", name="check_price_non_negative"),
         CheckConstraint("stock >= 0", name="check_stock_non_negative"),
+        UniqueConstraint("booth_id", "name", name="unique_booth_id_and_name"),
     )
