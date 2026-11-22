@@ -11,7 +11,3 @@ class AvandUser(HttpUser):
     @task(2)
     def get_booths(self):
         self.client.get("/api/v1/booths")
-
-    @task(1)
-    def check_service_ready(self):
-        self.client.get("/api/v1/ready")
