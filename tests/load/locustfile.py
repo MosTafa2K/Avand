@@ -6,8 +6,8 @@ class AvandUser(HttpUser):
 
     @task(3)
     def get_products(self):
-        self.client.get("/api/v1/products")
+        self.client.get("/api/v1/products", name="GET /api/v1/products")
 
     @task(2)
     def get_booths(self):
-        self.client.get("/api/v1/booths")
+        self.client.get("/api/v1/booths", name="GET /api/v1/booths")
