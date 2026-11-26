@@ -168,7 +168,7 @@ All API routes use the `/api/v1` prefix by default. Protected endpoints require 
 
 | Method | Endpoint | Login required? | What it does |
 |---|---|---|---|
-| `GET` | `/products` | No | Browses active products, with pagination and search. |
+| `GET` | `/products` | No | Browses active products, with pagination, search, and optional `min_rating` filter (1–5). |
 | `POST` | `/products/booths/{booth_id}` | Yes | Adds a product to a booth you own. |
 | `GET` | `/products/me/booths/{booth_id}` | Yes | Lists your booth's products, including inactive ones. |
 | `GET` | `/products/{product_id}` | No | Views an active product. |
