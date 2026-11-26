@@ -44,5 +44,6 @@ class BoothRead(BaseModel):
     slug: str
     description: str | None
     is_active: bool
+    city: str
     created_at: datetime
     updated_at: datetime
