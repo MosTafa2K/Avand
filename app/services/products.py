@@ -60,6 +60,7 @@ class ProductService:
         booth_id: UUID | None = None,
         active_only: bool = True,
         search: str | None = None,
+        min_rating: float | None = None,
     ):
         return await self.products.list_(
             page=page,
@@ -67,6 +68,7 @@ class ProductService:
             booth_id=booth_id,
             active_only=active_only,
             search=search,
+            min_rating=min_rating,
         )
 
     async def list_mine(self, page: int, size: int, booth_id: UUID, user_id: UUID):

@@ -43,12 +43,14 @@ async def list_products(
     size: int = Query(20, ge=1, le=100),
     booth_id: UUID | None = None,
     search: str | None = Query(None, max_length=100, description="Search for product with name"),
+    min_rating: float | None = Query(None, ge=1, le=5),
 ):
     items, total = await ProductService(db).products_list(
         page=page,
         size=size,
         booth_id=booth_id,
         search=search,
+        min_rating=min_rating,
     )
 
     return Page(items=items, total=total, page=page, size=size)

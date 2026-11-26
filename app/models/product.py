@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 from uuid import UUID, uuid4
 
 from sqlalchemy import (
@@ -20,10 +20,14 @@ from app.db import Base
 
 if TYPE_CHECKING:
     from app.models.booth import Booth
+    from app.models.review import Review
 
 
 class Product(Base):
     __tablename__ = "products"
+
+    # Computed when products are read; it is not stored in the products table.
+    average_rating: ClassVar[float] = 0.0
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     booth_id: Mapped[UUID] = mapped_column(
@@ -46,6 +50,9 @@ class Product(Base):
         onupdate=lambda: datetime.now(UTC),
     )
     booth: Mapped["Booth"] = relationship(back_populates="products")
+    reviews: Mapped[list["Review"]] = relationship(
+        back_populates="product", cascade="all, delete-orphan"
+    )
 
     __table_args__ = (
         CheckConstraint("price >= 0", name="check_price_non_negative"),
