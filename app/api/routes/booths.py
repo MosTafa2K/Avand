@@ -5,7 +5,9 @@ from fastapi import APIRouter, HTTPException, Query, status
 from app.api.deps import CurrentUser, DBSession
 from app.schemas.booth import BoothCreate, BoothRead, BoothUpdate
 from app.schemas.common import Page
+from app.schemas.product import ProductRead
 from app.services.booths import BoothService, ConflictError
+from app.services.products import ProductService
 
 router = APIRouter()
 
@@ -59,6 +61,33 @@ async def get_booth(
         )
 
     return booth
+
+
+@router.get("/{booth_id}/products", response_model=Page[ProductRead])
+async def list_booth_products(
+    booth_id: UUID,
+    db: DBSession,
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+):
+    booth = await BoothService(db).get(booth_id)
+    if booth is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Booth not found",
+        )
+    if not booth:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Booth is not active!",
+        )
+
+    items, total = await ProductService(db).products_list(
+        page=page,
+        size=size,
+        booth_id=booth_id,
+    )
+    return Page(items=items, total=total, page=page, size=size)
 
 
 @router.patch("/{booth_id}", response_model=BoothRead)

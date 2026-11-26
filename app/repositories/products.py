@@ -52,7 +52,7 @@ class ProductRepository:
             query = query.where(*conditions)
             count_query = count_query.where(*conditions)
         result = await self.session.scalars(
-            query.order_by(Product.created_at.desc()).offset((page - 1) * 10).limit(size)
+            query.order_by(Product.created_at.desc()).offset((page - 1) * size).limit(size)
         )
         total = await self.session.scalar(count_query)
 
