@@ -160,6 +160,7 @@ All API routes use the `/api/v1` prefix by default. Protected endpoints require 
 | `POST` | `/booths` | Yes | Creates a booth for you. A vendor profile is created if needed. |
 | `GET` | `/booths/me` | Yes | Lists your booths. |
 | `GET` | `/booths/{booth_id}` | No | Views an active booth. |
+| `GET` | `/booths/{booth_id}/products` | No | Lists active products in a booth, with pagination. |
 | `PATCH` | `/booths/{booth_id}` | Yes | Updates a booth you own. |
 | `DELETE` | `/booths/{booth_id}` | Yes | Deletes a booth you own. |
 
@@ -167,7 +168,7 @@ All API routes use the `/api/v1` prefix by default. Protected endpoints require 
 
 | Method | Endpoint | Login required? | What it does |
 |---|---|---|---|
-| `GET` | `/products` | No | Browses active products, with pagination and search. |
+| `GET` | `/products` | No | Browses active products, with pagination, search, and optional `min_rating` filter (1–5). |
 | `POST` | `/products/booths/{booth_id}` | Yes | Adds a product to a booth you own. |
 | `GET` | `/products/me/booths/{booth_id}` | Yes | Lists your booth's products, including inactive ones. |
 | `GET` | `/products/{product_id}` | No | Views an active product. |

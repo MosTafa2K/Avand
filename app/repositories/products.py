@@ -4,6 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.product import Product
+from app.models.review import Review
 
 
 class ProductRepository:
@@ -11,7 +12,26 @@ class ProductRepository:
         self.session = session
 
     async def get(self, product_id: UUID) -> Product | None:
-        return await self.session.scalar(select(Product).where(Product.id == product_id))
+        average_rating = self._average_rating_expression()
+        result = await self.session.execute(
+            select(Product, average_rating.label("average_rating")).where(Product.id == product_id)
+        )
+        row = result.one_or_none()
+        if row is None:
+            return None
+
+        product, rating = row
+        product.average_rating = float(rating or 0)
+        return product
+
+    @staticmethod
+    def _average_rating_expression():
+        return (
+            select(func.avg(Review.rating))
+            .where(Review.product_id == Product.id)
+            .correlate(Product)
+            .scalar_subquery()
+        )
 
     async def get_by_booth_and_name(self, booth_id: UUID, name: str) -> Product | None:
         return await self.session.scalar(
@@ -33,8 +53,10 @@ class ProductRepository:
         booth_id: UUID | None = None,
         active_only: bool = True,
         search: str | None = None,
+        min_rating: float | None = None,
     ):
-        query = select(Product)
+        average_rating = self._average_rating_expression()
+        query = select(Product, average_rating.label("average_rating"))
         count_query = select(func.count()).select_from(Product)
 
         conditions = []
@@ -48,15 +70,22 @@ class ProductRepository:
         if search:
             conditions.append(Product.name.ilike(f"%{search}%"))
 
+        if min_rating is not None:
+            conditions.append(func.coalesce(average_rating, 0) >= min_rating)
+
         if conditions:
             query = query.where(*conditions)
             count_query = count_query.where(*conditions)
-        result = await self.session.scalars(
-            query.order_by(Product.created_at.desc()).offset((page - 1) * 10).limit(size)
+        result = await self.session.execute(
+            query.order_by(Product.created_at.desc()).offset((page - 1) * size).limit(size)
         )
+        products = []
+        for product, rating in result.all():
+            product.average_rating = float(rating or 0)
+            products.append(product)
         total = await self.session.scalar(count_query)
 
-        return list(result), int(total or 0)
+        return products, int(total or 0)
 
     async def delete(self, product: Product):
         await self.session.delete(product)

@@ -30,5 +30,6 @@ class ProductRead(BaseModel):
     price: Decimal
     stock: int
     is_active: bool
+    average_rating: float = Field(default=0, ge=0, le=5)
     created_at: datetime
     updated_at: datetime
