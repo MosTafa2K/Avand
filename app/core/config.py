@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     database_url: str = ""
     allowed_origins: list[str] = ["http://localhost:3000"]
     log_level: str = "INFO"
+    db_pool_size: int = Field(default=20, ge=1)
+    db_max_overflow: int = Field(default=20, ge=0)
+    db_pool_timeout: int = Field(default=30, ge=1)
+    db_pool_recycle: int = Field(default=1800, ge=0)
     model_config = SettingsConfigDict(
         env_file=BASE_DIR / ".env",
         env_file_encoding="utf-8",
