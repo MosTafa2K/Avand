@@ -1,3 +1,4 @@
+from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy.exc import IntegrityError
@@ -61,6 +62,11 @@ class ProductService:
         active_only: bool = True,
         search: str | None = None,
         min_rating: float | None = None,
+        min_price: Decimal | None = None,
+        max_price: Decimal | None = None,
+        city: str | None = None,
+        sort_by: str = "created_at",
+        sort_order: str = "desc",
     ):
         return await self.products.list_(
             page=page,
@@ -69,6 +75,11 @@ class ProductService:
             active_only=active_only,
             search=search,
             min_rating=min_rating,
+            min_price=min_price,
+            max_price=max_price,
+            city=city,
+            sort_by=sort_by,
+            sort_order=sort_order,
         )
 
     async def list_mine(self, page: int, size: int, booth_id: UUID, user_id: UUID):
@@ -91,9 +102,7 @@ class ProductService:
         for field, value in updates_data.items():
             setattr(product, field, value)
         await self.session.commit()
-        await self.session.refresh(product)
-
-        return product
+        return await self.products.get(product.id)
 
     async def delete(self, product_id: UUID, user_id: UUID):
         product = await self.products.get(product_id)
