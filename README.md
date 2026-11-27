@@ -175,6 +175,18 @@ All API routes use the `/api/v1` prefix by default. Protected endpoints require 
 | `PATCH` | `/products/{product_id}` | Yes | Updates a product you own. |
 | `DELETE` | `/products/{product_id}` | Yes | Deletes a product you own. |
 
+Supported `/products` query parameters include `search`, `min_price`, `max_price`, `min_rating`,
+`city`, `sort_by=price|sales|created_at`, and `sort_order=asc|desc`.
+
+### Orders
+
+| Method | Endpoint | Login required? | What it does |
+|---|---|---|---|
+| `GET` | `/orders` | Yes | Lists your orders with pagination and optional `product_search`. |
+
+For example, `GET /orders?product_search=عسل` returns only your orders containing a product
+whose name matches «عسل».
+
 ## Using the API
 
 ### Register an account
