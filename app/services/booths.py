@@ -32,6 +32,7 @@ class BoothService:
                     name=data.name,
                     slug=data.slug,
                     description=data.description,
+                    city=data.city,
                 )
             )
 

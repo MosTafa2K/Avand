@@ -7,6 +7,7 @@ from slugify import slugify
 
 class BoothCreate(BaseModel):
     name: str = Field(min_length=2, max_length=120)
+    city: str = Field(min_length=2, max_length=100)
     slug: str | None = Field(
         default=None,
         min_length=2,
@@ -34,6 +35,7 @@ class BoothUpdate(BaseModel):
     )
     is_active: bool | None = None
     description: str | None = None
+    city: str | None = Field(default=None, min_length=2, max_length=100)
 
 
 class BoothRead(BaseModel):
