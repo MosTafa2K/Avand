@@ -1,7 +1,7 @@
 from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import Subquery, func, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.booth import Booth
@@ -79,13 +79,19 @@ class ProductRepository:
         sort_by: str = "created_at",
         sort_order: str = "desc",
     ):
-        average_rating = self._average_rating_expression()
+        average_rating = func.coalesce(func.avg(Review.rating), 0)
         sold_count = self._sold_count_expression()
-        query = select(
-            Product,
-            average_rating.label("average_rating"),
-            sold_count.label("sold_count"),
+
+        query = (
+            select(
+                Product,
+                average_rating.label("average_rating"),
+                sold_count.label("sold_count"),
+            )
+            .outerjoin(Review, Review.product_id == Product.id)
+            .group_by(Product.id)
         )
+
         count_query = select(func.count()).select_from(Product)
 
         conditions = []
@@ -103,12 +109,14 @@ class ProductRepository:
             )
 
         if min_rating is not None:
-            conditions.append(func.coalesce(average_rating, 0) >= min_rating)
+            query = query.having(average_rating >= min_rating)
 
         if min_price is not None:
             conditions.append(Product.price >= min_price)
+
         if max_price is not None:
             conditions.append(Product.price <= max_price)
+
         if city:
             conditions.append(Booth.city == city)
             query = query.join(Booth, Booth.id == Product.booth_id)
@@ -117,23 +125,37 @@ class ProductRepository:
         if conditions:
             query = query.where(*conditions)
             count_query = count_query.where(*conditions)
+
         sort_expression = {
             "price": Product.price,
             "sales": sold_count,
             "created_at": Product.created_at,
         }.get(sort_by, Product.created_at)
-        sort_expression = (
-            sort_expression.asc() if sort_order == "asc" else sort_expression.desc()
-        )
+
+        sort_expression = sort_expression.asc() if sort_order == "asc" else sort_expression.desc()
+
         result = await self.session.execute(
             query.order_by(sort_expression).offset((page - 1) * size).limit(size)
         )
+
         products = []
+
         for product, rating, sold in result.all():
             product.average_rating = float(rating or 0)
             product.sold_count = int(sold or 0)
             products.append(product)
-        total = await self.session.scalar(count_query)
+
+        if min_rating is not None:
+            count_query = (
+                count_query.outerjoin(Review, Review.product_id == Product.id)
+                .group_by(Product.id)
+                .having(average_rating >= min_rating)
+            )
+            total = await self.session.scalar(
+                select(func.count()).select_from(count_query.subquery())
+            )
+        else:
+            total = await self.session.scalar(count_query)
 
         return products, int(total or 0)
 
