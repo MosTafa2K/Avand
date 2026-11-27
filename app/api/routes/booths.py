@@ -76,7 +76,7 @@ async def list_booth_products(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Booth not found",
         )
-    if not booth:
+    if not booth.is_active:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Booth is not active!",
