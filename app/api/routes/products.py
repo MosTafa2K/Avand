@@ -1,3 +1,5 @@
+from decimal import Decimal
+from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query, status
@@ -44,6 +46,11 @@ async def list_products(
     booth_id: UUID | None = None,
     search: str | None = Query(None, max_length=100, description="Search for product with name"),
     min_rating: float | None = Query(None, ge=1, le=5),
+    min_price: Decimal | None = Query(None, ge=0),  # noqa: B008
+    max_price: Decimal | None = Query(None, ge=0),  # noqa: B008
+    city: str | None = Query(None, min_length=2, max_length=100),
+    sort_by: Literal["created_at", "price", "sales"] = Query("created_at"),
+    sort_order: Literal["asc", "desc"] = Query("desc"),
 ):
     items, total = await ProductService(db).products_list(
         page=page,
@@ -51,6 +58,11 @@ async def list_products(
         booth_id=booth_id,
         search=search,
         min_rating=min_rating,
+        min_price=min_price,
+        max_price=max_price,
+        city=city,
+        sort_by=sort_by,
+        sort_order=sort_order,
     )
 
     return Page(items=items, total=total, page=page, size=size)
