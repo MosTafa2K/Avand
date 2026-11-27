@@ -15,14 +15,17 @@ class ProductRepository:
         self.session = session
 
     async def get(self, product_id: UUID) -> Product | None:
-        average_rating = self._average_rating_expression()
-        sold_count = self._sold_count_expression()
+        ratings = self._ratings_subquery()
+        sales = self._sales_subquery()
         result = await self.session.execute(
             select(
                 Product,
-                average_rating.label("average_rating"),
-                sold_count.label("sold_count"),
-            ).where(Product.id == product_id)
+                func.coalesce(ratings.c.average_rating, 0).label("average_rating"),
+                func.coalesce(sales.c.sold_count, 0).label("sold_count"),
+            )
+            .outerjoin(ratings, ratings.c.product_id == Product.id)
+            .outerjoin(sales, sales.c.product_id == Product.id)
+            .where(Product.id == product_id)
         )
         row = result.one_or_none()
         if row is None:
@@ -34,22 +37,27 @@ class ProductRepository:
         return product
 
     @staticmethod
-    def _average_rating_expression():
+    def _ratings_subquery():
         return (
-            select(func.avg(Review.rating))
-            .where(Review.product_id == Product.id)
-            .correlate(Product)
-            .scalar_subquery()
+            select(
+                Review.product_id,
+                func.avg(Review.rating).label("average_rating"),
+            )
+            .group_by(Review.product_id)
+            .subquery()
         )
 
     @staticmethod
-    def _sold_count_expression():
+    def _sales_subquery():
         return (
-            select(func.coalesce(func.sum(OrderItem.quantity), 0))
+            select(
+                OrderItem.product_id,
+                func.sum(OrderItem.quantity).label("sold_count"),
+            )
             .join(Order, Order.id == OrderItem.order_id)
-            .where(OrderItem.product_id == Product.id, Order.status == "completed")
-            .correlate(Product)
-            .scalar_subquery()
+            .where(Order.status == "completed")
+            .group_by(OrderItem.product_id)
+            .subquery()
         )
 
     async def get_by_booth_and_name(self, booth_id: UUID, name: str) -> Product | None:
@@ -79,8 +87,10 @@ class ProductRepository:
         sort_by: str = "created_at",
         sort_order: str = "desc",
     ):
-        average_rating = func.coalesce(func.avg(Review.rating), 0)
-        sold_count = self._sold_count_expression()
+        ratings = self._ratings_subquery()
+        sales = self._sales_subquery()
+        average_rating = func.coalesce(ratings.c.average_rating, 0)
+        sold_count = func.coalesce(sales.c.sold_count, 0)
 
         query = (
             select(
@@ -88,8 +98,8 @@ class ProductRepository:
                 average_rating.label("average_rating"),
                 sold_count.label("sold_count"),
             )
-            .outerjoin(Review, Review.product_id == Product.id)
-            .group_by(Product.id)
+            .outerjoin(ratings, ratings.c.product_id == Product.id)
+            .outerjoin(sales, sales.c.product_id == Product.id)
         )
 
         count_query = select(func.count()).select_from(Product)
@@ -109,7 +119,7 @@ class ProductRepository:
             )
 
         if min_rating is not None:
-            query = query.having(average_rating >= min_rating)
+            conditions.append(average_rating >= min_rating)
 
         if min_price is not None:
             conditions.append(Product.price >= min_price)
@@ -146,16 +156,11 @@ class ProductRepository:
             products.append(product)
 
         if min_rating is not None:
-            count_query = (
-                count_query.outerjoin(Review, Review.product_id == Product.id)
-                .group_by(Product.id)
-                .having(average_rating >= min_rating)
+            count_query = count_query.outerjoin(
+                ratings, ratings.c.product_id == Product.id
             )
-            total = await self.session.scalar(
-                select(func.count()).select_from(count_query.subquery())
-            )
-        else:
-            total = await self.session.scalar(count_query)
+
+        total = await self.session.scalar(count_query)
 
         return products, int(total or 0)
 
