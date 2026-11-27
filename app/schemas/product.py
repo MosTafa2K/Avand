@@ -31,5 +31,6 @@ class ProductRead(BaseModel):
     stock: int
     is_active: bool
     average_rating: float = Field(default=0, ge=0, le=5)
+    sold_count: int = Field(default=0, ge=0)
     created_at: datetime
     updated_at: datetime

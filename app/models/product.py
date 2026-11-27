@@ -20,6 +20,7 @@ from app.db import Base
 
 if TYPE_CHECKING:
     from app.models.booth import Booth
+    from app.models.order import OrderItem
     from app.models.review import Review
 
 
@@ -28,6 +29,7 @@ class Product(Base):
 
     # Computed when products are read; it is not stored in the products table.
     average_rating: ClassVar[float] = 0.0
+    sold_count: ClassVar[int] = 0
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     booth_id: Mapped[UUID] = mapped_column(
@@ -53,6 +55,7 @@ class Product(Base):
     reviews: Mapped[list["Review"]] = relationship(
         back_populates="product", cascade="all, delete-orphan"
     )
+    order_items: Mapped[list["OrderItem"]] = relationship(back_populates="product")
 
     __table_args__ = (
         CheckConstraint("price >= 0", name="check_price_non_negative"),
